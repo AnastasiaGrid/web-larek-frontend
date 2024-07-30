@@ -1,12 +1,9 @@
-export type ApiListResponse<Type> = {
-    total: number,
-    items: Type[]
-};
+
 
 export type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
-
 export class Api {
     readonly baseUrl: string;
+    
     protected options: RequestInit;
 
     constructor(baseUrl: string, options: RequestInit = {}) {
@@ -19,7 +16,7 @@ export class Api {
         };
     }
 
-    protected handleResponse(response: Response): Promise<object> {
+    protected handleResponse<T>(response: Response): Promise<object> {
         if (response.ok) return response.json();
         else return response.json()
             .then(data => Promise.reject(data.error ?? response.statusText));
@@ -38,5 +35,6 @@ export class Api {
             method,
             body: JSON.stringify(data)
         }).then(this.handleResponse);
+        
     }
 }

@@ -5,7 +5,6 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="theme-color" content="#000000" />
 	<link rel="icon" href="/favicon.ico" />
-	<link rel="manifest" href="/manifest.json" />
 	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -20,7 +19,7 @@
 		<header class="header">
 			<div class="header__container">
 				<a class="header__logo" href="/">
-					<img class="header__logo-image" src="<%=require('../images/logo.svg')%>" alt="Film! logo" />
+					<img class="header__logo-image" src="<%=require('../images/logo.svg')%>" alt="Web! logo" />
 				</a>
 				<button class="header__basket">
 					<span class="header__basket-counter">0</span>
@@ -35,7 +34,7 @@
 		<div class="modal__container">
 			<button class="modal__close" aria-label="закрыть"></button>
 			<div class="modal__content">
-
+				
 			</div>
 		</div>
 	</div>
@@ -105,7 +104,7 @@
 							<h2 class="modal__title">Способ оплаты</h2>
 							<div class="order__buttons">
 								<button type="button" class="button button_alt">Онлайн</button>
-								<button type="button" class="button button_alt">При получении</button>
+								<button type="button" class="button button_alt" >При получении</button>
 							</div>
 						</div>
 						<label class="order__field">
@@ -160,7 +159,7 @@
 	<template id="success">
 		<div class="order-success">
 			<h2 class="order-success__title">Заказ оформлен</h2>
-			<p class="order-success__description">Списано 0 синапсов</p>
+			<p class="order-success__description">Списано <span class="order-success__description-total">0</span> синапсов</p>
 			<button class="button order-success__close">За новыми покупками!</button>
 		</div>
 	</template>
