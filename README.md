@@ -1,5 +1,9 @@
 # Проектная работа "Веб-ларек"
 
+
+https://github.com/AnastasiaGrid/web-larek-frontend.git
+
+
 Стек: HTML, SCSS, TS, Webpack
 
 Структура проекта:
