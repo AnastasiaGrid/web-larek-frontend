@@ -1,32 +1,8 @@
-// Хорошая практика даже простые типы выносить в алиасы
-
-import { FormErrors, IProductItem, TFormName, TOrderUserData } from "../../types";
-
-
-interface EventObj {
-    'modal:open': () => void;
-    'modal:close': () => void;
-    'cardModal:open': (id: string) => void;
-    'items:changed': (items:IProductItem[]) => void;
-    'formErrors:change': (errors?: FormErrors, formName?: TFormName) => void; 
-    'basket:add': (id: string) => void;
-    'basket:delete': (id: string) => void;
-    'basket:open': () => void;
-    'order:open': () => void;
-    'orderContacts:open': () => void;
-    'apiPost: send':() => void
-    'form:data:change': (data: {field: keyof TOrderUserData,value: string, formName: TFormName}) => void;
-    'sucessOrder:open': () => void;
-}
-
-export type AllEventFunctions = EventObj[keyof EventObj]
-export type EventName = keyof EventObj;
-export type EventData<K extends EventName> = Parameters<EventObj[K]>
-export type EventCallback<K extends EventName> = EventObj[K]
+import { EventName, Subscriber } from "../../types";
 
 export interface IEvents {
-    on<K extends EventName,T extends EventObj[K]>(event: K, callback: T): void;
-    emit<K extends EventName>(eventName: K, ...data: EventData<K>): void; 
+    on<T>(event: EventName, callback: (data: T) => void): void;
+    emit<T>(event: string, data?: T): void;
 }
 
 /**
@@ -35,31 +11,32 @@ export interface IEvents {
  * или слушать события по шаблону например
  */
 export class EventEmitter implements IEvents {
-    _events: Map<EventName, Set<AllEventFunctions>>;
+    _events: Map<EventName, Set<Subscriber>>;
 
     constructor() {
-        this._events = new Map<EventName, Set<AllEventFunctions>>();
+        this._events = new Map<EventName, Set<Subscriber>>();
     }
 
     /**
      * Установить обработчик на событие
      */
-    on<K extends EventName,T extends EventObj[K]>(eventName: K, callback: T) {
+    on<T>(eventName: EventName, callback: (event: T) => void) {
         if (!this._events.has(eventName)) {
-            this._events.set(eventName, new Set<T>());
+            this._events.set(eventName, new Set<Subscriber>());
         }
         this._events.get(eventName)?.add(callback);
     }
-
     /**
      * Инициировать событие с данными
      */
-    emit<K extends EventName>(eventName: K, ...data: EventData<K>) {
+    emit<T>(eventName: string, data?: T) {
         this._events.forEach((subscribers, name) => {
-            if (name === eventName) {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                subscribers.forEach(callback => callback(...data));
+            if (name === '*') subscribers.forEach(callback => callback({
+                eventName,
+                data
+            }));
+            if (name instanceof RegExp && name.test(eventName) || name === eventName) {
+                subscribers.forEach(callback => callback(data));
             }
         });
     }

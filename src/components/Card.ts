@@ -1,12 +1,9 @@
-import { IProductItem } from "../../types";
-import { CDN_URL } from "../../utils/constants";
-import { ensureElement } from "../../utils/utils";
-import { Component } from "../base/Component";
+import { ICardActions, IProductItem } from "../types";
+import { CDN_URL } from "../utils/constants";
+import { ensureElement } from "../utils/utils";
+import { Component } from "./base/Component";
+export { ICardActions };
 
-
-export interface ICardActions {
-    onClick: (event: MouseEvent) => void;
-}
 
 export class Card extends Component<IProductItem> {
     protected _description: HTMLElement;
@@ -77,14 +74,15 @@ export class Card extends Component<IProductItem> {
         } 
     }
     setTextAddButton(inBasket: boolean) {
-        this._button.textContent = inBasket ? 'Удалить из корзины' : 'В корзину'
+        this.setText(this._button, inBasket ? 'Удалить из корзины' : 'В корзину')
     }
     //устанавливает порядкой номер в корзине
     setIndexInBasket(index: number) {
-        this._indexInBasket.textContent = index.toString()
+        this.setText(this._indexInBasket, index.toString())
     } 
     //дизейблим кнопку для бесценного товара
     buttonDisable() {
         this.setDisabled(this._button, true)
     }
 }
+

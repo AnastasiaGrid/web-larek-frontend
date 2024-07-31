@@ -53,11 +53,19 @@ export interface IFormState {
     errors: string[];
 }
 
-export type TOrderAdressPayment = Pick<IOrderForm, 'payment' | 'address'>
-export type TOrderEmailPhone = Pick<IOrderForm, 'email' | 'phone'>
-export type TOrderUserData = TOrderAdressPayment & TOrderEmailPhone
+export interface ICardActions {
+    onClick: (event: MouseEvent) => void;
+}
+
+export type TOrderUserData = Pick <IOrderForm,'payment' | 'address' | 'email' | 'phone'>
 export type FormErrors = Partial<Record<keyof IOrderForm, string>>;
 
 export type TPaymentType = 'card' | 'cash'
 
 export type TFormName =  'contacts' | 'order'
+
+export type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
+
+export type EventName = string | RegExp;
+
+export type Subscriber = Function;

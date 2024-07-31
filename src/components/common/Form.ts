@@ -22,37 +22,23 @@ export class Form extends Component<IFormState> {
             const target = e.target as HTMLInputElement;
             const field = target.name;
             const value = target.value;
-            this.onInputChange(field as keyof TOrderUserData, value);
-            
+            this.onInputChange(field as keyof TOrderUserData, value);    
         });
-        switch(this.container.name) {
-            case('order'): {
-                this.container.addEventListener('submit', (e: Event) => {
-                    e.preventDefault();
-                   events.emit('orderContacts:open')
-                });
-                break
-            }
-            case('contacts'): {
-                this.container.addEventListener('submit', (e: Event) => {
-                    e.preventDefault();
-                    this.events.emit('apiPost: send')
-                });
-                break
-
-            }
-        }
+        this.container.addEventListener('submit', (e: Event) => {
+            e.preventDefault();                        
+            this.events.emit(`${this.container.name}:submit`);
+        });
     }
-    protected onInputChange(field: keyof TOrderUserData, value: string) {        
-        this.events.emit('form:data:change', {
-            field,
+    protected onInputChange(field: keyof TOrderUserData, value: string) {
+        this.events.emit(`${this.container.name}.${String(field)}:change`, ({
+            field: field as keyof TOrderUserData,
             value,
             formName: this.container.name as TFormName,
-        });
+        }));
     }
 
     set valid(value: boolean) {
-        this._submit.disabled = !value;
+        this.setDisabled(this._submit, !value)
     }
 
     set errors(value: string) {

@@ -1,9 +1,10 @@
-import { EventData, EventName, IEvents } from "./events";
+import {IEvents} from "./events";
 
 // Гарда для проверки на модель
 export const isModel = (obj: unknown): obj is Model<any> => {
     return obj instanceof Model;
 }
+
 /**
  * Базовая модель, чтобы можно было отличить ее от простых объектов с данными
  */
@@ -13,9 +14,9 @@ export abstract class Model<T> {
     }
 
     // Сообщить всем что модель поменялась
-    emitChanges<K extends EventName>(event: K, ...payload: EventData<K>) {
+    emitChanges(event: string, payload?: object) {
         // Состав данных можно модифицировать
-        this.events.emit(event, ...payload);
+        this.events.emit(event, payload ?? {});
     }
 
     // далее можно добавить общие методы для моделей

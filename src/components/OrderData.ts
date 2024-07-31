@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 import { FormErrors, IOrderForm, IProductInOrder, TFormName, TOrderUserData } from "../types";
 import { Model } from "./base/Model";
 import _ from 'lodash';
@@ -78,22 +79,24 @@ export class OrderData extends Model<IProductInOrder> {
 
     validateOrder(formName: TFormName) {
         const errors: typeof this.formErrors = {};
-        if(formName === 'contacts') {
-          if (!this.order.email) {
-                errors.email = 'Необходимо указать email';
+        if(formName === 'order') {
+            if (!this.order.address) {
+                errors.address = 'Необходимо указать адрес';
             }
-            if (!this.order.phone) {
-                errors.phone = 'Необходимо указать телефон';
-            }
-    }
-       if(formName === 'order') {
-        if (!this.order.address) {
-            errors.address = 'Необходимо указать адрес';
         }
-    }
+        if(formName === 'contacts') {
+            if(!/^[^@]+@[^@]+\.[^@]+$/.test(this.order.email)){
+                errors.email = 'Введите email в формате example@yandex.ru';
+            }
+            if(!/^[\+]?\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/.test(this.order.phone)){
+                errors.phone = 'Введите телефон в формате +79999999999';
+            }
+        }
         this.formErrors = errors;
-        this.events.emit('formErrors:change',this.formErrors, formName)
+        this.events.emit('formErrorsDelivery:change',this.formErrors)
+        this.events.emit('formErrorsContacts:change',this.formErrors)
         return Object.keys(errors).length === 0;
     }
     
 }
+

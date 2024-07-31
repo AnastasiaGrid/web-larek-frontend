@@ -1,8 +1,8 @@
-
-import { IBasketView} from "../../types";
-import { createElement, ensureElement, formatNumber } from "../../utils/utils";
-import { Component } from "../base/Component";
+import { IBasketView } from "../types";
+import { createElement, ensureElement, formatNumber } from "../utils/utils";
+import { Component } from "./base/Component";
 import { ICardActions } from "./Card";
+
 
 
 

@@ -1,16 +1,15 @@
 import { ProductsData } from "./components/ProductsData";
 import { EventEmitter } from "./components/base/events";
-import { Page } from "./components/common/Page";
-import { FormErrors, IOrderForm, IProductItem } from "./types"; 
+import { Page } from "./components/Page";
+import { FormErrors, IProductItem, TFormName, TOrderUserData } from "./types"; 
 import { API_URL} from "./utils/constants";
 import { cloneTemplate, ensureElement } from "./utils/utils";
 import './scss/styles.scss';
-import { Card } from "./components/common/Card";
+import { Card } from "./components/Card";
 import { Modal } from "./components/common/Modal";
 import { OrderData } from "./components/OrderData";
-import { Basket } from "./components/common/Basket";
-import { OrderPayment } from "./components/common/Order";
-import { Form } from "./components/common/Form";
+import { Basket } from "./components/Basket";
+import { OrderContacts, OrderPayment } from "./components/Order";
 import { Api } from "./components/base/api";
 
 //Шаблоны
@@ -40,7 +39,7 @@ api.get('/product')
 
 
 //Вывод всех карточек на страницу
-events.on('items:changed', (items) => {
+events.on('items:changed', (items:  IProductItem[]) => {
     const cards = items.map(product => {
         const cardItem = new Card('card',cloneTemplate(cardGalleryView),{ onClick: () =>  {
             events.emit('cardModal:open', product.id)
@@ -53,7 +52,7 @@ events.on('items:changed', (items) => {
 
 
 //Открытие модального окна с карточкой
-events.on('cardModal:open', (id) => {
+events.on('cardModal:open', (id: string) => {
     const data = productsData.getModelById(id) 
     const cardPreview = new Card('card',cloneTemplate(cardFullView),{ 
         onClick: () =>  {
@@ -86,13 +85,13 @@ events.on('modal:close', () => {
 
 
 //Добавление товара в корзину
-events.on('basket:add', (id) => {
+events.on('basket:add', (id: string) => {
     orderData.toggleOrderedProduct(id)
     page.counter = orderData.getTotalItemsInBasket() 
 }) 
 
 //Удаление товара из корзины
-events.on('basket:delete', (id) => {
+events.on('basket:delete', (id: string) => {
     orderData.toggleOrderedProduct(id)
     page.counter = orderData.getTotalItemsInBasket()
 }) 
@@ -133,38 +132,31 @@ events.on('order:open', () => {
     })
 
 //Модалка первой страницы оформления заказа
-const orderFormDelivery = new OrderPayment(cloneTemplate(orderModalForm),  {
-        onClick: (e) =>  {
-            const target = e.target as HTMLButtonElement
-            const payment:IOrderForm['payment'] = target.name === 'cash' ? 'cash' : 'card'
-            orderFormDelivery.payment = payment  
-            events.emit('form:data:change',{
-                field: 'payment',
-                value: payment,
-                formName: 'order'
-            } )
-       } 
-    }, events)
+const orderFormDelivery = new OrderPayment(cloneTemplate(orderModalForm),events)
 
-
-
-//Изменение формы 
-events.on('form:data:change', ({field, value, formName}) => {
+//Изменение формы доставки
+events.on(/^order\..*:change/, ({field, value, formName}: {field:keyof TOrderUserData, value: string, formName: TFormName }) => {
     orderData.setOrderData(field,value)
     orderData.validateOrder(formName)
- })   
+})   
+    
+//Изменение формы контактов
+events.on(/^contacts\..*:change/, ({field, value, formName}: {field:keyof TOrderUserData, value: string, formName: TFormName }) => {
+    orderData.setOrderData(field,value)
+    orderData.validateOrder(formName)
+    })   
 
  //Переход по "Далее" в форме заказа 
- events.on('orderContacts:open', () => {
-     modal.render({content: orderFormContacts.render()})
+ events.on('order:submit', () => {
+    modal.render({content: orderFormContacts.render()})
  })
 
  //Модалка второй страницы оформления заказа
- const orderFormContacts = new Form(cloneTemplate(contactsModalForm),events)
+ const orderFormContacts = new OrderContacts(cloneTemplate(contactsModalForm),events)
 
 
 //отправка формы на сервер
-events.on('apiPost: send', ()=> {
+events.on('contacts:submit', ()=> {
      api.post('/order', orderData.getOrder(), 'POST')
      .then(data => {
        events.emit('sucessOrder:open')
@@ -172,28 +164,26 @@ events.on('apiPost: send', ()=> {
        page.counter = orderData.getTotalItemsInBasket()
        orderFormContacts.clearForm()
        orderFormDelivery.clearForm()
+       
     })
-    .catch(data => {
-       alert(data)
-     })  
+    .catch(console.error)
  })
     
-// Изменилось состояние валидации формы
-events.on('formErrors:change', (errors: Partial<FormErrors>, formName) => {  
-    const { payment, address, phone, email } = errors;
-    switch(formName) {
-        case('order'): {
-            orderFormDelivery.valid = !payment && !address;
-            orderFormDelivery.errors = Object.values({payment, address}).filter(i => !!i).join('; ');        
-            break
-        }
-        case('contacts'): {
-            orderFormContacts.valid = !email && !phone;  
-            orderFormContacts.errors = Object.values({email, phone}).filter(i => !!i).join('; ');   
-            break
-        }      
-    }
-});
+ // Изменилось состояние валидации формы доставки
+ events.on('formErrorsDelivery:change', (errors: Partial<FormErrors>) => {  
+     const { payment, address} = errors;
+        orderFormDelivery.valid = !payment && !address;
+        orderFormDelivery.errors = Object.values({payment, address}).filter(i => !!i).join('; ');        
+ });
+
+// Изменилось состояние валидации формы контактов
+events.on('formErrorsContacts:change', (errors: Partial<FormErrors>) => {  
+const { phone, email } = errors;
+    orderFormContacts.valid = !email && !phone;  
+    orderFormContacts.errors = Object.values({email, phone}).filter(i => !!i).join('; ');   
+    })
+
+
 
 //Модалка успешнного оформления заказа
 events.on('sucessOrder:open', () => {
